@@ -1,17 +1,18 @@
 /*
  * ads1115.h
  *
- *  Created on: 4 ΰοπ. 2023 γ.
+ *  Created on: 4 Π°ΠΏΡ€. 2023 Π³.
  *      Author: sogonove
  */
 #include "stm32f4xx_hal.h"
+#include <stdint.h>
 
 
 #ifndef SRC_ADS1115_H_
 #define SRC_ADS1115_H_
 
 
-#define slaveAddress 0x48
+#define address_ADS1115 0x48
 
 #define CONV_REG  0x0
 #define CONF_REG  0x1
@@ -97,16 +98,21 @@
 #define Differential_1_3  AIN1_AIN3 
 #define Differential_2_3  AIN2_AIN3
 
+void setting_ADS1115 (uint8_t os, uint8_t mux, uint8_t pga, uint8_t mode, uint8_t dr,uint8_t comp_mode,
+		uint8_t comp_pol, uint8_t comp_lat, uint8_t comp_que);
 
+void write_ADS1115 (uint8_t os, uint8_t mux, uint8_t pga, uint8_t mode, uint8_t dr,uint8_t comp_mode, uint8_t comp_pol, uint8_t comp_lat, uint8_t comp_que,
 
-void setting_ADS1115();
+		uint8_t slave_address, uint32_t timeout, I2C_HandleTypeDef *hi2c,
+		uint8_t reg
+		);
 
+void read_date_ADS1115 (uint8_t os, uint8_t mux, uint8_t pga, uint8_t mode,
+		uint8_t dr,uint8_t comp_mode, uint8_t comp_pol, uint8_t comp_lat, uint8_t comp_que,
 
-
-
-
-
-
+		uint8_t slave_address, uint32_t timeout, I2C_HandleTypeDef *hi2c,
+		uint8_t reg
+		);
 
 
 
