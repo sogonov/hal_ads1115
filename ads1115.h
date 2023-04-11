@@ -7,96 +7,161 @@
 #include "stm32f4xx_hal.h"
 #include <stdint.h>
 
-
 #ifndef SRC_ADS1115_H_
 #define SRC_ADS1115_H_
 
 
-#define address_ADS1115 0x48
+#define ADS1115_ADDRESS 0x48
+typedef enum{
+	CONV_REG = 0x0,
+	CONF_REG = 0x1,
+	Lo_thresh_REG = 0x2,
+	Hi_thresh_REG = 0x3
+}reg_t;
 
-#define CONV_REG  0x0
-#define CONF_REG  0x1
-#define Lo_thresh  0x2
-#define Hi_thresh  0x3
-
-//Config Register
 //OS
-#define W_NE  0x0
-#define W_SC  0x1
-#define R_CC  0x0
-#define R_NCC  0x1
+typedef enum {
+	W_NE = 0x0,
+	W_SC = 0x1,
+	R_CC = 0x0,
+	R_NCC = 0x1
+}OperatingMode_t;
 
 //MUX
-#define AIN0_AIN1  0b0
-#define	AIN0_AIN3  0b1
-#define AIN1_AIN3  0b10
-#define AIN2_AIN3  0b11
+typedef enum{
+	AIN0_AIN1 = 0x0,
+	AIN0_AIN3 = 0x1,
+	AIN1_AIN3 = 0x2,
+	AIN2_AIN3 = 0x3,
+	AIN0_AIN_GND = 0x4,
+	AIN1_AIN_GND = 0x5,
+	AIN2_AIN_GND = 0x6,
+	AIN3_AIN_GND = 0x7
+}MultiplexerConfig_t;
 
-#define AIN0_AIN_GND  0b100
-#define AIN1_AIN_GND  0b101
-#define AIN2_AIN_GND  0b110
-#define AIN3_AIN_GND  0b111
 
 //Programmable gain amplifier configuration
-// PGA
-#define FS6144  0b0
-#define FS4096  0b1
-#define FS2048  0b10
-#define FS1024  0b11
-#define FS0512  0b100
-#define FS0256_0  0b101
-#define FS0256_1  0b110
-#define FS0256_2  0b111
-
-
+typedef enum {
+	FS6144 = 0x0,
+	FS4096 = 0x1,
+	FS2048 = 0x2,
+	FS1024 = 0x3,
+	FS0512 = 0x4,
+	FS0256_0 = 0x5,
+	FS0256_1 = 0x6,
+	FS0256_2 = 0x7
+}PGA_Config_t;
 
 //MODE
-
-#define CCM  0b0 //: Continuous-conversion mode
-#define SSPDM  0b1 //Single-shot mode or power-down state
-
-
-//DR
+typedef enum {
+	CCM = 0x0,//: Continuous-conversion mode
+	PDSSM = 0x1 //Single-shot mode or power-down state
+}MODEconfig_t;
 // Data rate
-
-#define SPS8  0b0
-#define SPS16  0b1
-#define SPS32  0b10
-#define SPS64  0b11
-#define SPS128  0b100
-#define SPS250  0b101
-#define SPS475  0b110
-#define SPS860  0b111
-
+typedef enum {
+	SPS8 = 0x0,
+	SPS16 = 0x1,
+	SPS32 = 0x2,
+	SPS64 = 0x3,
+	SPS128 = 0x4,
+	SPS250 = 0x5,
+	SPS475 = 0x6,
+	SPS860 = 0x7
+}DataRate_t;
 //Comparator mode
-#define TC  0b0
-#define WC  0b1
-
+typedef enum COMP_MODE {
+	TCWH = 0x0,
+	WC = 0x1
+}CompareMode_t;
 
 // Comparator polarity
-#define AL  0b0
-#define AH  0b1
+typedef enum{
+	AL = 0x0,
+	AH = 0x1
+}ComparePolarity_t;
 
 // Latching comparator
-#define NLC  0b0
-#define LC  0b1
-
+typedef enum  {
+	NLC = 0x0,
+	LC = 0x1
+}LatchingMode_t;
 
 //Comparator queue and disable
-#define AAOC  0b0
-#define AATC  0b1
-#define AAFC  0b10
-#define DC  0b11
+typedef enum{
+	AAOC = 0x0,
+	AATC = 0x1,
+	AAFC = 0x2,
+	DC = 0x3
+}QueueComparator_t;
+
 
 // channel
-#define Channel_0  AIN0_AIN_GND
-#define Channel_1  AIN1_AIN_GND
-#define Channel_2  AIN2_AIN_GND 
-#define Channel_3  AIN3_AIN_GND 
-#define Differential_0_1  AIN0_AIN1
-#define Differential_0_3  AIN0_AIN3 
-#define Differential_1_3  AIN1_AIN3 
-#define Differential_2_3  AIN2_AIN3
+enum channel {
+	Channel_0 = AIN0_AIN_GND,
+	Channel_1 = AIN1_AIN_GND,
+	Channel_2 = AIN2_AIN_GND,
+	Channel_3 = AIN3_AIN_GND,
+	Differential_0_1 = AIN0_AIN1,
+	Differential_0_3 = AIN0_AIN3,
+	Differential_1_3 = AIN1_AIN3,
+	Differential_2_3 = AIN2_AIN3
+};
+
+typedef struct{
+	OperatingMode_t 	operatingMode;
+	MultiplexerConfig_t channel;
+	PGA_Config_t 		pgaConfig;
+	MODEconfig_t 		modeConfig;
+	DataRate_t			dataRate;
+	CompareMode_t		compareMode;
+	ComparePolarity_t	polarityMode;
+	LatchingMode_t		latchingMode;
+	QueueComparator_t	queueComparator;
+}ADS1115_Config_t;
+
+typedef struct{
+	uint16_t	operationalStatus	: 1;
+	uint16_t	inputMultiplexer	: 3;
+	uint16_t	pgaConfig			: 3;
+	uint16_t	operatingMode		: 1;
+	uint16_t	dataRate			: 3;
+	uint16_t	comparatorMode		: 1;
+	uint16_t	comparatorPolarity	: 1;
+	uint16_t	compartorLatching	: 1;
+	uint16_t	comparatorQueue		: 2;
+}ADS1115_ConfigReg_t;
+
+
+
+typedef struct ADS1115_Config_Tag ADS1115_Handle_t;
+ADS1115_Handle_t* ADS1115_init(I2C_HandleTypeDef *hi2c, uint16_t Addr, ADS1115_Config_t config);
+void ADS1115_deinit();
+void ADS1115_updateConfig(ADS1115_Handle_t *pConfig, ADS1115_Config_t config);
+void ADS1115_updateI2Chandler(ADS1115_Handle_t *pConfig, I2C_HandleTypeDef *hi2c);
+void ADS1115_updateAddress(ADS1115_Handle_t *pConfig, uint16_t address);
+void ADS1115_SetDefault(ADS1115_Handle_t *pConfig);
+int16_t ADS1115_oneShotMeasure();
+int16_t ADS1115_getData();
+void ADS1115_setThresholds(ADS1115_Handle_t *pConfig, int16_t lowValue, int16_t highValue);
+void ADS1115_startContinousMode(ADS1115_Handle_t* pConfig);
+void ADS1115_stopContinousMode(ADS1115_Handle_t* pConfig);
+void ADS1115_setConversionReadyPin(ADS1115_Handle_t* pConfig);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void setting_ADS1115 (uint8_t os, uint8_t mux, uint8_t pga, uint8_t mode, uint8_t dr,uint8_t comp_mode,
 		uint8_t comp_pol, uint8_t comp_lat, uint8_t comp_que);
@@ -113,8 +178,6 @@ void read_date_ADS1115 (uint8_t os, uint8_t mux, uint8_t pga, uint8_t mode,
 		uint8_t slave_address, uint32_t timeout, I2C_HandleTypeDef *hi2c,
 		uint8_t reg
 		);
-
-
 
 
 
