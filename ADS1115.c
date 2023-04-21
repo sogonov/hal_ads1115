@@ -67,6 +67,7 @@ void ADS1115_SetDefault(ADS1115_Handle_t *pConfig){
 	configReg.latchingMode = NLC;
 	configReg.queueComparator = DC;
 
+
 	prepareConfigFrame(bytes, configReg);
 	HAL_I2C_Master_Transmit(pConfig->hi2c, (pConfig->address << 1), bytes, 3, 100);
 
@@ -129,6 +130,63 @@ void ADS1115_stopContinousMode(ADS1115_Handle_t* pConfig){
 	prepareConfigFrame(bytes, configReg);
 	HAL_I2C_Master_Transmit(pConfig->hi2c, (pConfig->address << 1), bytes, 3, 100);
 }
+
+
+float raw_to_voltage(
+		uint16_t raw,
+		ADS1115_Handle_t *pConfig)
+{
+	ADS1115_Config_t configReg = pConfig->config;
+	uint8_t PGA = configReg.pgaConfig;
+	float LSB;
+	switch (PGA)
+	{
+		case 0x0:{LSB=6.144/32768;} break;
+		case 0x1:{LSB=4.048/32768.;}break;
+		case 0x2:{LSB=2.048/32768.;}break;
+		case 0x3:{LSB=1.024/32768;}break;
+		case 0x4:{LSB=0.512/32768;}break;
+		default: {LSB=0.256/32768;};
+	}
+	float voltage = ((float)raw)*LSB;
+	return voltage;
+};
+
+
+float voltage_to_resistance(
+		float voltage,
+		float vRef,
+		float Res)
+{
+	float Th_resist=(voltage*Res*1000.)/( vRef - voltage);
+	return Th_resist;
+};
+
+
+float resistance_to_temperature(float resistance)
+{
+	float Beta=4381.5;
+	float R0 = 100000.;
+	float T0 = 25.+273.15;
+	float temperature =1/(1/Beta*log(resistance/R0)+1/(T0))-273.15;
+	return temperature;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

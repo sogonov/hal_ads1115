@@ -6,6 +6,10 @@
  */
 #include "stm32f4xx_hal.h"
 #include <stdint.h>
+#include <math.h>
+
+
+
 
 #ifndef SRC_ADS1115_H_
 #define SRC_ADS1115_H_
@@ -133,6 +137,16 @@ typedef struct{
 
 
 
+#define v_reference 3.3
+
+/*typedef enum {
+	vol3_3 = 33,
+	vol5_0 = 5
+}Vref_t;*/
+
+
+
+
 typedef struct ADS1115_Config_Tag ADS1115_Handle_t;
 ADS1115_Handle_t* ADS1115_init(I2C_HandleTypeDef *hi2c, uint16_t Addr, ADS1115_Config_t config);
 void ADS1115_deinit();
@@ -150,8 +164,19 @@ void ADS1115_setConversionReadyPin(ADS1115_Handle_t* pConfig);
 
 
 
+float raw_to_voltage(
+		uint16_t raw,
+		ADS1115_Handle_t *pConfig);
 
+float voltage_to_resistance(
+		float voltage,
+		float vRef,
+		float Res
+		);
 
+float resistance_to_temperature(
+		float resistance
+		);
 
 
 
